@@ -20,8 +20,9 @@ const server = http.createServer(app);
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://your-frontend-url.vercel.app',
-        'https://*.vercel.app'
+        process.env.FRONTEND_URL || 'https://chat-app-frontend.vercel.app',
+        'https://*.vercel.app',
+        /https:\/\/.*\.vercel\.app$/
       ]
     : 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
