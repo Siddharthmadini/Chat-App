@@ -6,7 +6,7 @@ import FriendRequests from '../Friends/FriendRequests';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange }) => {
+const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, onClose }) => {
   const { user, logout } = useAuth();
   const { currentRoom, joinRoom } = useSocket();
   const [friends, setFriends] = useState([]);
@@ -45,12 +45,14 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange }) 
     if (room !== currentRoom) {
       joinRoom(room);
       onViewChange('rooms');
+      onClose && onClose(); // Close sidebar on mobile
     }
   };
 
   const handleFriendSelect = (friend) => {
     onSelectFriend(friend);
     onViewChange('directMessage');
+    onClose && onClose(); // Close sidebar on mobile
   };
 
   const handleLogout = () => {
@@ -68,11 +70,23 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange }) 
 
   return (
     <>
-      <div className="w-64 bg-gray-800 text-white flex flex-col">
+      <div className="w-full h-full bg-gray-800 text-white flex flex-col">
+        {/* Mobile Close Button */}
+        <div className="lg:hidden flex justify-end p-4">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         {/* User Info */}
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -91,7 +105,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange }) 
               </p>
               <button
                 onClick={copyUserCode}
-                className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer"
+                className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer block"
                 title="Click to copy user code"
               >
                 Code: {user?.userCode}

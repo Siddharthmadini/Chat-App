@@ -143,30 +143,32 @@ const DirectMessageChat = ({ friend, onBack }) => {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center">
+      <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4 flex items-center">
         <button
           onClick={onBack}
-          className="mr-4 text-gray-500 hover:text-gray-700 lg:hidden"
+          className="mr-3 p-2 text-gray-500 hover:text-gray-700 lg:hidden rounded-full hover:bg-gray-100"
         >
-          ←
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
             {friend.avatar ? (
               <img
                 src={friend.avatar}
                 alt={friend.username}
-                className="w-10 h-10 rounded-full"
+                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full"
               />
             ) : (
               getAvatarInitials(friend.username)
             )}
           </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900 truncate">
               {friend.username}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs lg:text-sm text-gray-500 truncate">
               {friend.isOnline ? (
                 <span className="text-green-500">● Online</span>
               ) : (
@@ -178,11 +180,11 @@ const DirectMessageChat = ({ friend, onBack }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-4 scrollbar-thin">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center text-gray-500">
-              <p className="text-lg">No messages yet</p>
+            <div className="text-center text-gray-500 px-4">
+              <p className="text-base lg:text-lg">No messages yet</p>
               <p className="text-sm">Start a conversation with {friend.username}!</p>
             </div>
           </div>
@@ -192,7 +194,7 @@ const DirectMessageChat = ({ friend, onBack }) => {
             return (
               <div key={message.id || index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
                 <div className={`flex ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end max-w-xs lg:max-w-md`}>
-                  <div className={`px-4 py-2 rounded-lg ${
+                  <div className={`px-3 lg:px-4 py-2 rounded-lg ${
                     isOwn 
                       ? 'bg-primary-500 text-white' 
                       : 'bg-gray-200 text-gray-900'
@@ -215,7 +217,7 @@ const DirectMessageChat = ({ friend, onBack }) => {
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex justify-start mb-4">
-            <div className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg">
+            <div className="bg-gray-200 text-gray-900 px-3 lg:px-4 py-2 rounded-lg">
               <div className="text-sm text-gray-500">
                 {friend.username} is typing...
               </div>
@@ -227,7 +229,7 @@ const DirectMessageChat = ({ friend, onBack }) => {
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 px-6 py-4">
+      <div className="border-t border-gray-200 px-4 lg:px-6 py-4">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
           <input
             type="text"
@@ -235,12 +237,12 @@ const DirectMessageChat = ({ friend, onBack }) => {
             onChange={handleInputChange}
             onBlur={handleStopTyping}
             placeholder={`Message ${friend.username}...`}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="flex-1 px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm lg:text-base"
           />
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 lg:px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm lg:text-base"
           >
             Send
           </button>

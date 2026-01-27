@@ -3,8 +3,7 @@ node_modules/
 */node_modules/
 
 # Production builds
-client/build/
-server/dist/
+
 
 # Environment variables (CRITICAL - NEVER PUSH THESE!)
 .env
@@ -70,8 +69,7 @@ jspm_packages/
 dist
 
 # Gatsby files
-.cache/
-public
+
 
 # Storybook build outputs
 .out

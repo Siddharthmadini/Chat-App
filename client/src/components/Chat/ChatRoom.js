@@ -51,7 +51,7 @@ const ChatRoom = () => {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
         <h2 className="text-lg font-semibold text-gray-900">
           #{currentRoom}
         </h2>
@@ -61,13 +61,13 @@ const ChatRoom = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-4 scrollbar-thin">
         <MessageList messages={messages} currentUser={user} />
         <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 px-6 py-4">
+      <div className="border-t border-gray-200 px-4 lg:px-6 py-4">
         <MessageInput onSendMessage={handleSendMessage} />
       </div>
     </div>

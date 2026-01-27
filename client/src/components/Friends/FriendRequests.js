@@ -53,15 +53,17 @@ const FriendRequests = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-4 lg:p-6 border-b flex-shrink-0">
           <h3 className="text-lg font-semibold">Friend Requests</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 p-1"
           >
-            ✕
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -90,7 +92,7 @@ const FriendRequests = ({ onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           {activeTab === 'received' ? (
             <div className="space-y-4">
               {receivedRequests.length === 0 ? (
@@ -99,9 +101,9 @@ const FriendRequests = ({ onClose }) => {
                 </div>
               ) : (
                 receivedRequests.map((request) => (
-                  <div key={request._id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
+                  <div key={request._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg space-y-3 sm:space-y-0">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
                         {request.sender.avatar ? (
                           <img
                             src={request.sender.avatar}
@@ -112,24 +114,24 @@ const FriendRequests = ({ onClose }) => {
                           getAvatarInitials(request.sender.username)
                         )}
                       </div>
-                      <div>
-                        <p className="font-medium">{request.sender.username}</p>
-                        <p className="text-sm text-gray-500">Code: {request.sender.userCode}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{request.sender.username}</p>
+                        <p className="text-sm text-gray-500 truncate">Code: {request.sender.userCode}</p>
                         {request.message && (
-                          <p className="text-sm text-gray-600 mt-1">{request.message}</p>
+                          <p className="text-sm text-gray-600 mt-1 break-words">{request.message}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 sm:flex-shrink-0">
                       <button
                         onClick={() => handleRequest(request._id, 'accept')}
-                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                        className="flex-1 sm:flex-none px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
                       >
                         Accept
                       </button>
                       <button
                         onClick={() => handleRequest(request._id, 'reject')}
-                        className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                        className="flex-1 sm:flex-none px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                       >
                         Reject
                       </button>
@@ -146,9 +148,9 @@ const FriendRequests = ({ onClose }) => {
                 </div>
               ) : (
                 sentRequests.map((request) => (
-                  <div key={request._id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
+                  <div key={request._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg space-y-3 sm:space-y-0">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
                         {request.receiver.avatar ? (
                           <img
                             src={request.receiver.avatar}
@@ -159,15 +161,15 @@ const FriendRequests = ({ onClose }) => {
                           getAvatarInitials(request.receiver.username)
                         )}
                       </div>
-                      <div>
-                        <p className="font-medium">{request.receiver.username}</p>
-                        <p className="text-sm text-gray-500">Code: {request.receiver.userCode}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{request.receiver.username}</p>
+                        <p className="text-sm text-gray-500 truncate">Code: {request.receiver.userCode}</p>
                         {request.message && (
-                          <p className="text-sm text-gray-600 mt-1">{request.message}</p>
+                          <p className="text-sm text-gray-600 mt-1 break-words">{request.message}</p>
                         )}
                       </div>
                     </div>
-                    <div className="text-sm text-yellow-600 font-medium">
+                    <div className="text-sm text-yellow-600 font-medium sm:flex-shrink-0">
                       Pending
                     </div>
                   </div>
