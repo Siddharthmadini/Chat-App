@@ -169,4 +169,47 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// Delete a specific direct message
+router.delete('/:messageId', auth, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+
+    const message = await DirectMessage.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Check if user owns the message
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this message' });
+    }
+
+    await DirectMessage.findByIdAndDelete(messageId);
+    res.json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Clear conversation with a specific user
+router.delete('/conversation/:userId', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Delete all messages between current user and the specified user
+    // Only delete messages sent by the current user
+    await DirectMessage.deleteMany({
+      $or: [
+        { sender: req.user._id, receiver: userId },
+        { sender: userId, receiver: req.user._id }
+      ],
+      sender: req.user._id // Only delete messages sent by current user
+    });
+
+    res.json({ message: 'Conversation cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;
