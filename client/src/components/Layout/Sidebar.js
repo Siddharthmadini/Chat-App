@@ -103,13 +103,16 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
               <p className="text-sm font-medium truncate">
                 {user?.username}
               </p>
-              <button
-                onClick={copyUserCode}
-                className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer block"
-                title="Click to copy user code"
-              >
-                Code: {user?.userCode}
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={copyUserCode}
+                  className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer block bg-gray-700 px-2 py-1 rounded font-mono"
+                  title="Click to copy user code"
+                >
+                  {user?.userCode}
+                </button>
+                <span className="text-xs text-gray-500">← Share this code</span>
+              </div>
             </div>
           </div>
         </div>
@@ -122,33 +125,43 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Friends
               </h3>
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => setShowRequests(true)}
-                  className="text-xs text-gray-400 hover:text-white relative"
-                  title="Friend Requests"
-                >
-                  📋
-                  {pendingRequestsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      {pendingRequestsCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => setShowAddFriend(true)}
-                  className="text-xs text-gray-400 hover:text-white"
-                  title="Add Friend"
-                >
-                  ➕
-                </button>
-              </div>
+            </div>
+            
+            {/* Friend Management Buttons */}
+            <div className="mb-4 space-y-2">
+              <button
+                onClick={() => setShowAddFriend(true)}
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors text-sm font-medium"
+                title="Add a new friend using their user code"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Add Friend</span>
+              </button>
+              
+              <button
+                onClick={() => setShowRequests(true)}
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm font-medium relative"
+                title="View and manage friend requests"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Friend Requests</span>
+                {pendingRequestsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {pendingRequestsCount}
+                  </span>
+                )}
+              </button>
             </div>
             
             <div className="space-y-1">
               {friends.length === 0 ? (
-                <div className="text-xs text-gray-500 text-center py-2">
-                  No friends yet
+                <div className="text-xs text-gray-500 text-center py-4 bg-gray-700 rounded-md">
+                  <p className="mb-2">No friends yet</p>
+                  <p className="text-gray-400">Add friends to start chatting!</p>
                 </div>
               ) : (
                 friends.map((friend) => (
@@ -161,7 +174,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                     }`}
                   >
-                    <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-xs">
+                    <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-xs flex-shrink-0">
                       {friend.avatar ? (
                         <img
                           src={friend.avatar}
