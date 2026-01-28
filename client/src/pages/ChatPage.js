@@ -8,7 +8,7 @@ const ChatPage = () => {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [currentView, setCurrentView] = useState('rooms'); // 'rooms' or 'directMessage'
   const [showSidebar, setShowSidebar] = useState(false); // Mobile sidebar toggle
-  const { width: sidebarWidth, startResizing, isResizing } = useResizable(280, 240, 450);
+  const { width: sidebarWidth, startResizing, isResizing } = useResizable(350, 240, 450);
 
   const handleSelectFriend = (friend) => {
     setSelectedFriend(friend);

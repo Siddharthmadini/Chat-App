@@ -139,7 +139,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                {sidebarWidth > 280 && <span>Add Friend</span>}
+                {sidebarWidth > 260 && <span>Add Friend</span>}
               </button>
               
               <button
@@ -150,7 +150,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                {sidebarWidth > 280 && <span>Friend Requests</span>}
+                {sidebarWidth > 260 && <span>Friend Requests</span>}
                 {pendingRequestsCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {pendingRequestsCount}
@@ -194,7 +194,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
                         getAvatarInitials(friend.username)
                       )}
                     </div>
-                    {sidebarWidth > 280 && (
+                    {sidebarWidth > 260 && (
                       <div className="flex-1 min-w-0">
                         <div className="truncate">{friend.username}</div>
                         {friend.isOnline && (
@@ -211,7 +211,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
           {/* Rooms Section */}
           <div className="p-4 border-t border-gray-700">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              {sidebarWidth > 280 ? 'Channels' : 'Rooms'}
+              {sidebarWidth > 260 ? 'Channels' : 'Rooms'}
             </h3>
             <div className="space-y-1">
               {rooms.map((room) => (
@@ -225,7 +225,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
                   }`}
                 >
                   <span className="mr-2">#</span>
-                  {sidebarWidth > 280 ? room : room.charAt(0)}
+                  {sidebarWidth > 260 ? room : room.charAt(0)}
                 </button>
               ))}
             </div>
@@ -241,7 +241,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {sidebarWidth > 280 && <span>Sign Out</span>}
+            {sidebarWidth > 260 && <span>Sign Out</span>}
           </button>
         </div>
       </div>

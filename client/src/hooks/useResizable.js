@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const useResizable = (initialWidth = 256, minWidth = 200, maxWidth = 400) => {
+const useResizable = (initialWidth = 350, minWidth = 200, maxWidth = 400) => {
   const [width, setWidth] = useState(() => {
     // Get saved width from localStorage or use initial width
     const saved = localStorage.getItem('sidebarWidth');
