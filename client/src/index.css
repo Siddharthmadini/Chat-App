@@ -7,17 +7,17 @@
     @apply border-gray-200;
   }
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-white text-gray-900;
   }
 }
 
 /* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-white;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {

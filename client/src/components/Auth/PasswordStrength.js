@@ -10,24 +10,34 @@ const PasswordStrength = ({ password }) => {
 
   const passedCount = requirements.filter(req => req.test).length;
   const strength = passedCount === 4 ? 'Strong' : passedCount >= 2 ? 'Medium' : 'Weak';
-  const strengthColor = passedCount === 4 ? 'text-green-600' : passedCount >= 2 ? 'text-yellow-600' : 'text-red-600';
+  const strengthColor = passedCount === 4 ? 'text-gray-900' : passedCount >= 2 ? 'text-gray-600' : 'text-gray-400';
 
   if (!password) return null;
 
   return (
-    <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+    <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">Password Strength:</span>
-        <span className={`text-sm font-medium ${strengthColor}`}>{strength}</span>
+        <span className="text-xs font-medium text-gray-600">Password strength</span>
+        <span className={`text-xs font-semibold ${strengthColor}`}>{strength}</span>
       </div>
-      
+      {/* Strength bar */}
+      <div className="flex space-x-1 mb-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-colors ${
+              i <= passedCount ? 'bg-gray-900' : 'bg-gray-200'
+            }`}
+          />
+        ))}
+      </div>
       <div className="space-y-1">
         {requirements.map((req, index) => (
           <div key={index} className="flex items-center text-xs">
-            <span className={`mr-2 ${req.test ? 'text-green-500' : 'text-gray-400'}`}>
-              {req.test ? '✓' : '○'}
+            <span className={`mr-2 font-bold ${req.test ? 'text-gray-900' : 'text-gray-300'}`}>
+              {req.test ? '✓' : '·'}
             </span>
-            <span className={req.test ? 'text-green-700' : 'text-gray-500'}>
+            <span className={req.test ? 'text-gray-700' : 'text-gray-400'}>
               {req.label}
             </span>
           </div>
