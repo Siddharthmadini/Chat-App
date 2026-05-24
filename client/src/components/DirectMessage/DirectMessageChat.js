@@ -151,12 +151,12 @@ const DirectMessageChat = ({ friend, onBack }) => {
           ←
         </button>
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
+          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium overflow-hidden">
             {friend.avatar ? (
               <img
                 src={friend.avatar}
                 alt={friend.username}
-                className="w-10 h-10 rounded-full"
+                className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
               getAvatarInitials(friend.username)
@@ -173,6 +173,11 @@ const DirectMessageChat = ({ friend, onBack }) => {
                 `Last seen ${new Date(friend.lastSeen).toLocaleDateString()}`
               )}
             </p>
+            {friend.bio && (
+              <p className="text-xs text-gray-400 mt-0.5 max-w-md truncate" title={friend.bio}>
+                {friend.bio}
+              </p>
+            )}
           </div>
         </div>
       </div>

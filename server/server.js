@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
 const friendRoutes = require('./routes/friends');
 const directMessageRoutes = require('./routes/directMessages');
+const profileRoutes = require('./routes/profile');
 const { socketAuth, handleConnection } = require('./socket/socketHandlers');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
@@ -32,7 +33,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use('/api', apiLimiter);
 
 // Routes
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/direct-messages', directMessageRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

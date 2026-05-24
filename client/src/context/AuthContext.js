@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 
+// Set base URL for all axios requests — uses env var in production, falls back to proxy in dev
+if (process.env.REACT_APP_SERVER_URL) {
+  axios.defaults.baseURL = process.env.REACT_APP_SERVER_URL;
+}
+
 const AuthContext = createContext();
 
 const authReducer = (state, action) => {
@@ -34,6 +39,11 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         loading: false,
         error: action.payload
+      };
+    case 'UPDATE_PROFILE':
+      return {
+        ...state,
+        user: { ...state.user, ...action.payload }
       };
     default:
       return state;
@@ -152,7 +162,8 @@ export const AuthProvider = ({ children }) => {
       ...state,
       login,
       register,
-      logout
+      logout,
+      dispatch
     }}>
       {children}
     </AuthContext.Provider>

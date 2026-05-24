@@ -132,7 +132,7 @@ router.put('/request/:requestId', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('friends', 'username avatar userCode isOnline lastSeen');
+      .populate('friends', 'username avatar userCode isOnline lastSeen bio');
 
     res.json({ friends: user.friends });
   } catch (error) {

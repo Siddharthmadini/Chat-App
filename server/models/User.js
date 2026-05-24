@@ -50,6 +50,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  bio: {
+    type: String,
+    default: '',
+    trim: true,
+    maxlength: [400, 'Bio cannot exceed 400 characters']
+  },
   friends: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

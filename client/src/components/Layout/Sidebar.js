@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import AddFriend from '../Friends/AddFriend';
 import FriendRequests from '../Friends/FriendRequests';
+import ProfilePage from '../Profile/ProfilePage';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -10,6 +11,7 @@ const Sidebar = ({ onSelectFriend, selectedFriend }) => {
   const [friends, setFriends] = useState([]);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   useEffect(() => {
@@ -52,21 +54,33 @@ const Sidebar = ({ onSelectFriend, selectedFriend }) => {
         {/* User Info */}
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.username}
-                  className="w-10 h-10 rounded-full"
-                />
-              ) : (
-                <span className="text-sm font-medium">
-                  {getAvatarInitials(user?.username)}
-                </span>
-              )}
-            </div>
+            <button
+              onClick={() => setShowProfile(true)}
+              className="relative flex-shrink-0 group"
+              title="Edit profile"
+            >
+              <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.username} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <span className="text-sm font-medium text-white">
+                    {getAvatarInitials(user?.username)}
+                  </span>
+                )}
+              </div>
+              <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </div>
+            </button>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.username}</p>
+              <button
+                onClick={() => setShowProfile(true)}
+                className="text-sm font-medium truncate hover:text-primary-300 transition-colors text-left w-full"
+              >
+                {user?.username}
+              </button>
               <button
                 onClick={copyUserCode}
                 className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer"
@@ -76,6 +90,11 @@ const Sidebar = ({ onSelectFriend, selectedFriend }) => {
               </button>
             </div>
           </div>
+          {user?.bio && (
+            <p className="mt-2 text-xs text-gray-400 line-clamp-2 leading-relaxed">
+              {user.bio}
+            </p>
+          )}
         </div>
 
         {/* Friends List */}
@@ -187,6 +206,10 @@ const Sidebar = ({ onSelectFriend, selectedFriend }) => {
             fetchPendingRequests();
           }}
         />
+      )}
+
+      {showProfile && (
+        <ProfilePage onClose={() => setShowProfile(false)} />
       )}
     </>
   );
