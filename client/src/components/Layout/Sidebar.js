@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useSocket } from '../../context/SocketContext';
 import AddFriend from '../Friends/AddFriend';
 import FriendRequests from '../Friends/FriendRequests';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, onClose, sidebarWidth }) => {
+const Sidebar = ({ onSelectFriend, selectedFriend }) => {
   const { user, logout } = useAuth();
-  const { currentRoom, joinRoom } = useSocket();
   const [friends, setFriends] = useState([]);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
-
-  const rooms = ['general', 'random', 'tech', 'gaming'];
 
   useEffect(() => {
     if (user) {
@@ -41,24 +37,6 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
     }
   };
 
-  const handleRoomChange = (room) => {
-    if (room !== currentRoom) {
-      joinRoom(room);
-      onViewChange('rooms');
-      onClose && onClose(); // Close sidebar on mobile
-    }
-  };
-
-  const handleFriendSelect = (friend) => {
-    onSelectFriend(friend);
-    onViewChange('directMessage');
-    onClose && onClose(); // Close sidebar on mobile
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
   const getAvatarInitials = (username) => {
     return username?.charAt(0).toUpperCase();
   };
@@ -70,23 +48,11 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
 
   return (
     <>
-      <div className="w-full h-full bg-gray-800 text-white flex flex-col relative">
-        {/* Mobile Close Button */}
-        <div className="lg:hidden flex justify-end p-4">
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
+      <div className="w-64 bg-gray-800 text-white flex flex-col">
         {/* User Info */}
-        <div className="p-4 border-b border-gray-700 flex-shrink-0">
+        <div className="p-4 border-b border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -100,159 +66,116 @@ const Sidebar = ({ onSelectFriend, selectedFriend, currentView, onViewChange, on
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {user?.username}
-              </p>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={copyUserCode}
-                  className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer block bg-gray-700 px-2 py-1 rounded font-mono"
-                  title="Click to copy user code"
-                >
-                  {user?.userCode}
-                </button>
-                {sidebarWidth > 320 && (
-                  <span className="text-xs text-gray-500">← Share this code</span>
-                )}
-              </div>
+              <p className="text-sm font-medium truncate">{user?.username}</p>
+              <button
+                onClick={copyUserCode}
+                className="text-xs text-gray-400 hover:text-gray-200 truncate cursor-pointer"
+                title="Click to copy user code"
+              >
+                Code: {user?.userCode}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex-1 overflow-y-auto">
-          {/* Friends Section */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Friends
-              </h3>
-            </div>
-            
-            {/* Friend Management Buttons */}
-            <div className="mb-4 space-y-2">
-              <button
-                onClick={() => setShowAddFriend(true)}
-                className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors text-sm font-medium"
-                title="Add a new friend using their user code"
-              >
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {sidebarWidth > 260 && <span>Add Friend</span>}
-              </button>
-              
+        {/* Friends List */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Messages
+            </h3>
+            <div className="flex space-x-2">
               <button
                 onClick={() => setShowRequests(true)}
-                className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm font-medium relative"
-                title="View and manage friend requests"
+                className="relative text-gray-400 hover:text-white"
+                title="Friend Requests"
               >
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                {sidebarWidth > 260 && <span>Friend Requests</span>}
                 {pendingRequestsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                     {pendingRequestsCount}
                   </span>
                 )}
               </button>
-            </div>
-            
-            <div className="space-y-1">
-              {friends.length === 0 ? (
-                <div className="text-xs text-gray-500 text-center py-4 bg-gray-700 rounded-md">
-                  <div className="flex flex-col items-center space-y-2">
-                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                    <p className="font-medium">No friends yet</p>
-                    {sidebarWidth > 300 && (
-                      <p className="text-gray-400">Add friends to start chatting!</p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                friends.map((friend) => (
-                  <button
-                    key={friend._id}
-                    onClick={() => handleFriendSelect(friend)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center space-x-2 ${
-                      selectedFriend?._id === friend._id && currentView === 'directMessage'
-                        ? 'bg-primary-600 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
-                  >
-                    <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                      {friend.avatar ? (
-                        <img
-                          src={friend.avatar}
-                          alt={friend.username}
-                          className="w-6 h-6 rounded-full"
-                        />
-                      ) : (
-                        getAvatarInitials(friend.username)
-                      )}
-                    </div>
-                    {sidebarWidth > 260 && (
-                      <div className="flex-1 min-w-0">
-                        <div className="truncate">{friend.username}</div>
-                        {friend.isOnline && (
-                          <div className="text-xs text-green-400">● Online</div>
-                        )}
-                      </div>
-                    )}
-                  </button>
-                ))
-              )}
+              <button
+                onClick={() => setShowAddFriend(true)}
+                className="text-gray-400 hover:text-white"
+                title="Add Friend"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </button>
             </div>
           </div>
 
-          {/* Rooms Section */}
-          <div className="p-4 border-t border-gray-700">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              {sidebarWidth > 260 ? 'Channels' : 'Rooms'}
-            </h3>
-            <div className="space-y-1">
-              {rooms.map((room) => (
+          <div className="space-y-1">
+            {friends.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <p className="text-xs text-gray-500">No friends yet</p>
+                <p className="text-xs text-gray-600 mt-1">Add friends to start chatting!</p>
+              </div>
+            ) : (
+              friends.map((friend) => (
                 <button
-                  key={room}
-                  onClick={() => handleRoomChange(room)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center ${
-                    currentRoom === room && currentView === 'rooms'
+                  key={friend._id}
+                  onClick={() => onSelectFriend(friend)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center space-x-3 ${
+                    selectedFriend?._id === friend._id
                       ? 'bg-primary-600 text-white'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`}
                 >
-                  <span className="mr-2">#</span>
-                  {sidebarWidth > 260 ? room : room.charAt(0)}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-xs font-medium">
+                      {friend.avatar ? (
+                        <img src={friend.avatar} alt={friend.username} className="w-8 h-8 rounded-full" />
+                      ) : (
+                        getAvatarInitials(friend.username)
+                      )}
+                    </div>
+                    {friend.isOnline && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-gray-800 rounded-full"></span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate font-medium">{friend.username}</div>
+                    <div className="text-xs truncate">
+                      {friend.isOnline
+                        ? <span className={selectedFriend?._id === friend._id ? 'text-green-300' : 'text-green-400'}>Online</span>
+                        : <span className="text-gray-500">Offline</span>
+                      }
+                    </div>
+                  </div>
                 </button>
-              ))}
-            </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-gray-700 flex-shrink-0">
+        <div className="p-4 border-t border-gray-700">
           <button
-            onClick={handleLogout}
-            className="w-full px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors flex items-center justify-center space-x-2"
+            onClick={logout}
+            className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {sidebarWidth > 260 && <span>Sign Out</span>}
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
 
-      {/* Modals */}
       {showAddFriend && (
         <AddFriend
           onClose={() => setShowAddFriend(false)}
-          onFriendRequestSent={() => {
-            fetchPendingRequests();
-          }}
+          onFriendRequestSent={fetchPendingRequests}
         />
       )}
 

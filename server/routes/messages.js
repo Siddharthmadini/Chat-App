@@ -46,43 +46,4 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Delete a specific message
-router.delete('/:messageId', auth, async (req, res) => {
-  try {
-    const { messageId } = req.params;
-
-    const message = await Message.findById(messageId);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    // Check if user owns the message
-    if (message.sender.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this message' });
-    }
-
-    await Message.findByIdAndDelete(messageId);
-    res.json({ message: 'Message deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Clear all messages in a room
-router.delete('/room/:room', auth, async (req, res) => {
-  try {
-    const { room } = req.params;
-
-    // Delete all messages in the room sent by the current user
-    await Message.deleteMany({ 
-      room: room,
-      sender: req.user._id 
-    });
-
-    res.json({ message: 'Chat cleared successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
 module.exports = router;

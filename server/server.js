@@ -16,25 +16,22 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const app = express();
 const server = http.createServer(app);
 
-// CORS configuration for production
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [
-        process.env.FRONTEND_URL || 'https://chat-app-frontend.vercel.app',
-        'https://*.vercel.app',
-        /https:\/\/.*\.vercel\.app$/
-      ]
-    : 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-};
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(o => o.trim())
+  : ['http://localhost:3000'];
 
 const io = socketIo(server, {
-  cors: corsOptions
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
+  }
 });
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
 app.use('/api', apiLimiter);
 
@@ -46,12 +43,7 @@ app.use('/api/direct-messages', directMessageRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    message: 'Chat server is running!',
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+  res.json({ message: 'Chat server is running!' });
 });
 
 // Socket.IO middleware and handlers

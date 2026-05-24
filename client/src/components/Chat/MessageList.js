@@ -1,7 +1,7 @@
 import React from 'react';
 import Message from './Message';
 
-const MessageList = ({ messages, currentUser, onDeleteMessage }) => {
+const MessageList = ({ messages, currentUser }) => {
   if (messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -14,20 +14,18 @@ const MessageList = ({ messages, currentUser, onDeleteMessage }) => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {messages.map((message, index) => {
-        const isOwn = message.sender?.id === currentUser?.id || message.sender?._id === currentUser?.id;
+        const isOwn = message.sender.id === currentUser.id;
         const showAvatar = index === 0 || 
-          (messages[index - 1].sender?.id !== message.sender?.id && 
-           messages[index - 1].sender?._id !== message.sender?._id);
+          messages[index - 1].sender.id !== message.sender.id;
         
         return (
           <Message
-            key={message.id || message._id || index}
+            key={message.id || index}
             message={message}
             isOwn={isOwn}
             showAvatar={showAvatar}
-            onDeleteMessage={onDeleteMessage}
           />
         );
       })}

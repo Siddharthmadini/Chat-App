@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Message = require('../models/Message');
 const DirectMessage = require('../models/DirectMessage');
 
 const socketAuth = async (socket, next) => {
@@ -26,59 +25,13 @@ const handleConnection = (io) => {
     console.log(`User ${socket.username} connected`);
 
     // Update user online status
-    await User.findByIdAndUpdate(socket.userId, { 
+    await User.findByIdAndUpdate(socket.userId, {
       isOnline: true,
       lastSeen: new Date()
     });
 
-    // Join default room and user-specific room
-    socket.join('general');
+    // Join user-specific room for direct messages
     socket.join(`user_${socket.userId}`);
-
-    // Broadcast user joined
-    socket.to('general').emit('userJoined', {
-      username: socket.username,
-      message: `${socket.username} joined the chat`
-    });
-
-    // Handle joining rooms
-    socket.on('joinRoom', (room) => {
-      socket.leave('general');
-      socket.join(room);
-      socket.emit('roomJoined', room);
-    });
-
-    // Handle sending messages
-    socket.on('sendMessage', async (data) => {
-      try {
-        const { content, room = 'general' } = data;
-
-        // Save message to database
-        const message = new Message({
-          sender: socket.userId,
-          content,
-          room
-        });
-
-        await message.save();
-        await message.populate('sender', 'username avatar');
-
-        // Emit message to room
-        io.to(room).emit('newMessage', {
-          id: message._id,
-          content: message.content,
-          sender: {
-            id: message.sender._id,
-            username: message.sender.username,
-            avatar: message.sender.avatar
-          },
-          room: message.room,
-          createdAt: message.createdAt
-        });
-      } catch (error) {
-        socket.emit('error', { message: 'Failed to send message' });
-      }
-    });
 
     // Handle sending direct messages
     socket.on('sendDirectMessage', async (data) => {
@@ -103,7 +56,6 @@ const handleConnection = (io) => {
         await directMessage.populate('sender', 'username avatar');
         await directMessage.populate('receiver', 'username avatar');
 
-        // Emit to both sender and receiver
         const messageData = {
           id: directMessage._id,
           content: directMessage.content,
@@ -146,35 +98,13 @@ const handleConnection = (io) => {
       });
     });
 
-    // Handle typing indicators
-    socket.on('typing', (data) => {
-      socket.to(data.room || 'general').emit('userTyping', {
-        username: socket.username,
-        isTyping: true
-      });
-    });
-
-    socket.on('stopTyping', (data) => {
-      socket.to(data.room || 'general').emit('userTyping', {
-        username: socket.username,
-        isTyping: false
-      });
-    });
-
     // Handle disconnect
     socket.on('disconnect', async () => {
       console.log(`User ${socket.username} disconnected`);
-      
-      // Update user offline status
-      await User.findByIdAndUpdate(socket.userId, { 
+
+      await User.findByIdAndUpdate(socket.userId, {
         isOnline: false,
         lastSeen: new Date()
-      });
-
-      // Broadcast user left
-      socket.broadcast.emit('userLeft', {
-        username: socket.username,
-        message: `${socket.username} left the chat`
       });
     });
   };

@@ -9,22 +9,6 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
-  
-  /* Mobile viewport fix */
-  html, body, #root {
-    height: 100%;
-    overflow: hidden;
-  }
-  
-  /* Mobile safe area */
-  @supports (padding: max(0px)) {
-    .mobile-safe-top {
-      padding-top: max(1rem, env(safe-area-inset-top));
-    }
-    .mobile-safe-bottom {
-      padding-bottom: max(1rem, env(safe-area-inset-bottom));
-    }
-  }
 }
 
 /* Custom scrollbar */
@@ -42,25 +26,4 @@
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  /* Prevent zoom on input focus */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  textarea {
-    font-size: 16px;
-  }
-  
-  /* Better touch targets */
-  button {
-    min-height: 44px;
-  }
-  
-  /* Smooth scrolling on mobile */
-  .scrollbar-thin {
-    -webkit-overflow-scrolling: touch;
-  }
 }
