@@ -2,8 +2,8 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 
 // Set base URL for all axios requests — uses env var in production, falls back to proxy in dev
-if (process.env.REACT_APP_SERVER_URL) {
-  axios.defaults.baseURL = process.env.REACT_APP_SERVER_URL;
+if (process.env.REACT_APP_API_URL) {
+  axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 }
 
 const AuthContext = createContext();
