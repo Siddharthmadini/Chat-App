@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import EmojiPicker from 'emoji-picker-react';
 import axios from 'axios';
 
 const DirectMessageChat = ({ friend, onBack }) => {
@@ -8,16 +9,34 @@ const DirectMessageChat = ({ friend, onBack }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { socket } = useSocket();
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const inputRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => { scrollToBottom(); }, [messages]);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target) &&
+        !e.target.closest('[data-emoji-btn]')
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -86,6 +105,24 @@ const DirectMessageChat = ({ friend, onBack }) => {
   const handleStopTyping = () => {
     if (socket) socket.emit('directTyping', { receiverId: friend._id, isTyping: false });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  };
+
+  const handleEmojiClick = (emojiData) => {
+    const emoji = emojiData.emoji;
+    const input = inputRef.current;
+    if (input) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const updated = newMessage.slice(0, start) + emoji + newMessage.slice(end);
+      setNewMessage(updated);
+      // Restore cursor position after emoji insert
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start + emoji.length, start + emoji.length);
+      }, 0);
+    } else {
+      setNewMessage(prev => prev + emoji);
+    }
   };
 
   const formatTime = (timestamp) =>
@@ -214,25 +251,64 @@ const DirectMessageChat = ({ friend, onBack }) => {
 
       {/* Message Input */}
       <div className="bg-white border-t border-gray-200 px-4 py-3">
-        <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleInputChange}
-            onBlur={handleStopTyping}
-            placeholder={`Message ${friend.username}...`}
-            className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all"
-          />
-          <button
-            type="submit"
-            disabled={!newMessage.trim()}
-            className="w-10 h-10 bg-gray-900 hover:bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </form>
+        <div className="relative">
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div
+              ref={emojiPickerRef}
+              className="absolute bottom-14 left-0 z-50 shadow-2xl rounded-2xl overflow-hidden"
+            >
+              <EmojiPicker
+                onEmojiClick={handleEmojiClick}
+                theme="light"
+                skinTonesDisabled
+                searchPlaceholder="Search emoji..."
+                width={320}
+                height={400}
+                previewConfig={{ showPreview: false }}
+              />
+            </div>
+          )}
+
+          <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+            {/* Emoji toggle button */}
+            <button
+              type="button"
+              data-emoji-btn="true"
+              onClick={() => setShowEmojiPicker(prev => !prev)}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${
+                showEmojiPicker
+                  ? 'bg-gray-200 text-gray-700'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              }`}
+              title="Emoji"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
+            <input
+              ref={inputRef}
+              type="text"
+              value={newMessage}
+              onChange={handleInputChange}
+              onBlur={handleStopTyping}
+              placeholder={`Message ${friend.username}...`}
+              className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all"
+            />
+
+            <button
+              type="submit"
+              disabled={!newMessage.trim()}
+              className="w-10 h-10 bg-gray-900 hover:bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
