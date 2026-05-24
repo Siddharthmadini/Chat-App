@@ -28,7 +28,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) return callback(null, true);
     // In development allow all
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
-    callback(new Error('Not allowed by CORS'));
+    callback(null, false);
   },
   credentials: true
 };
