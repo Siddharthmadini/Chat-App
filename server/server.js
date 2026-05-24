@@ -17,8 +17,8 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(o => o.trim())
+const allowedOrigins = (process.env.CLIENT_URL || process.env.FRONTEND_URL)
+  ? (process.env.CLIENT_URL || process.env.FRONTEND_URL).split(',').map(o => o.trim())
   : ['http://localhost:3000'];
 
 const corsOptions = {
