@@ -21,6 +21,18 @@ const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(o => o.trim())
   : ['http://localhost:3000'];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // In development allow all
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+};
+
 const io = socketIo(server, {
   cors: {
     origin: allowedOrigins,
@@ -29,10 +41,7 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '5mb' }));
 app.use('/api', apiLimiter);
 
