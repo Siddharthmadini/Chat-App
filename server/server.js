@@ -19,7 +19,7 @@ const server = http.createServer(app);
 
 // Allow all origins — tighten this after confirming deployment works
 const corsOptions = {
-  origin: '*',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: false
 };
 
