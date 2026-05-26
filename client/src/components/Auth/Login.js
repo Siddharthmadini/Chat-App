@@ -31,10 +31,17 @@ const Login = ({ onToggleMode }) => {
     if (result.success) {
       toast.success('Login successful!');
     } else {
-      if (result.error?.includes('email') || result.error?.includes('credentials')) {
-        setErrors({ email: 'Invalid email or password' });
+      const msg = result.error || 'Login failed';
+      // Show inline error under both fields for credential errors
+      if (msg.toLowerCase().includes('credentials') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('password') || msg.toLowerCase().includes('user')) {
+        setErrors({
+          email: ' ',  // highlights the field border without duplicate text
+          password: 'Incorrect email or password. Please try again.'
+        });
+      } else if (msg.toLowerCase().includes('too many')) {
+        toast.error(msg);
       } else {
-        toast.error(result.error || 'Login failed');
+        toast.error(msg);
       }
     }
   };
