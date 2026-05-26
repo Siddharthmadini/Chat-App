@@ -17,9 +17,9 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const app = express();
 const server = http.createServer(app);
 
-// Allow all origins — tighten this after confirming deployment works
+// Allow all origins
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: '*',
   credentials: false
 };
 
