@@ -10,7 +10,10 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      const newSocket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000', {
+      const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 
+        (process.env.NODE_ENV === 'production' ? 'https://chat-app-9cti.onrender.com' : 'http://localhost:5000');
+
+      const newSocket = io(SOCKET_URL, {
         auth: { token }
       });
 

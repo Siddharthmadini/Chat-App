@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 
-// Set base URL for all axios requests — uses env var in production, falls back to proxy in dev
-if (process.env.REACT_APP_API_URL) {
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+// Set base URL for all axios requests
+// Uses env var in production, hardcoded Render URL as fallback, proxy in local dev
+const API_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' ? 'https://chat-app-9cti.onrender.com' : '');
+
+if (API_URL) {
+  axios.defaults.baseURL = API_URL;
 }
 
 const AuthContext = createContext();
