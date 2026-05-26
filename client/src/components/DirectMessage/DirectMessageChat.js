@@ -58,13 +58,14 @@ const DirectMessageChat = ({ friend, onBack }) => {
       socket.emit('joinUserRoom');
 
       socket.on('newDirectMessage', (message) => {
-        if (message.sender.id === friend._id || message.receiver.id === friend._id) {
+        if ((message.sender.id || message.sender._id) === (friend._id) || 
+            (message.receiver.id || message.receiver._id) === (friend._id)) {
           setMessages(prev => [...prev, message]);
         }
       });
 
       socket.on('directMessageSent', (message) => {
-        if (message.receiver.id === friend._id) {
+        if ((message.receiver.id || message.receiver._id) === friend._id) {
           setMessages(prev => [...prev, message]);
         }
       });
@@ -190,9 +191,9 @@ const DirectMessageChat = ({ friend, onBack }) => {
           </div>
         ) : (
           messages.map((message, index) => {
-            const isOwn = message.sender.id === user.id;
+            const isOwn = (message.sender._id || message.sender.id) === (user._id || user.id);
             const prevMessage = messages[index - 1];
-            const showAvatar = !isOwn && (!prevMessage || prevMessage.sender.id !== message.sender.id);
+            const showAvatar = !isOwn && (!prevMessage || (prevMessage.sender._id || prevMessage.sender.id) !== (message.sender._id || message.sender.id));
 
             return (
               <div key={message.id || index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-end space-x-2`}>
