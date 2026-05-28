@@ -43,7 +43,22 @@ router.get('/:userId', auth, async (req, res) => {
     );
 
     res.json({
-      messages: messages.reverse(),
+      messages: messages.reverse().map(m => ({
+        id: m._id,
+        content: m.content,
+        createdAt: m.createdAt,
+        isRead: m.isRead,
+        sender: {
+          id: m.sender._id.toString(),
+          username: m.sender.username,
+          avatar: m.sender.avatar
+        },
+        receiver: {
+          id: m.receiver._id.toString(),
+          username: m.receiver.username,
+          avatar: m.receiver.avatar
+        }
+      })),
       currentPage: page,
       hasMore: messages.length === parseInt(limit)
     });

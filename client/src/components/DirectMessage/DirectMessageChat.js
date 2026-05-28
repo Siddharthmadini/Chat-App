@@ -191,9 +191,12 @@ const DirectMessageChat = ({ friend, onBack }) => {
           </div>
         ) : (
           messages.map((message, index) => {
-            const isOwn = (message.sender._id || message.sender.id) === (user._id || user.id);
+            const senderId = String(message.sender.id || message.sender._id);
+            const currentUserId = String(user.id || user._id);
+            const isOwn = senderId === currentUserId;
             const prevMessage = messages[index - 1];
-            const showAvatar = !isOwn && (!prevMessage || (prevMessage.sender._id || prevMessage.sender.id) !== (message.sender._id || message.sender.id));
+            const prevSenderId = prevMessage ? String(prevMessage.sender.id || prevMessage.sender._id) : null;
+            const showAvatar = !isOwn && (!prevMessage || prevSenderId !== senderId);
 
             return (
               <div key={message.id || index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-end space-x-2`}>
