@@ -27,12 +27,27 @@ const directMessageSchema = new mongoose.Schema({
   },
   readAt: {
     type: Date
-  }
+  },
+  // Reply feature
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DirectMessage',
+    default: null
+  },
+  // Delete feature — soft delete, only hides from both sides
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  // Star feature — array of user IDs who starred this message
+  starredBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
   timestamps: true
 });
 
-// Index for efficient querying
 directMessageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
 
 module.exports = mongoose.model('DirectMessage', directMessageSchema);

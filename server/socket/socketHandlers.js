@@ -36,50 +36,87 @@ const handleConnection = (io) => {
     // Handle sending direct messages
     socket.on('sendDirectMessage', async (data) => {
       try {
-        const { content, receiverId } = data;
+        const { content, receiverId, replyToId } = data;
 
-        // Check if users are friends
         const currentUser = await User.findById(socket.userId);
         if (!currentUser.friends.includes(receiverId)) {
           socket.emit('error', { message: 'You can only message friends' });
           return;
         }
 
-        // Save direct message to database
         const directMessage = new DirectMessage({
           sender: socket.userId,
           receiver: receiverId,
-          content
+          content,
+          replyTo: replyToId || null
         });
 
         await directMessage.save();
         await directMessage.populate('sender', 'username avatar');
         await directMessage.populate('receiver', 'username avatar');
+        if (replyToId) {
+          await directMessage.populate({
+            path: 'replyTo',
+            populate: { path: 'sender', select: 'username' }
+          });
+        }
 
         const messageData = {
-          id: directMessage._id,
+          id: directMessage._id.toString(),
           content: directMessage.content,
+          isDeleted: false,
+          isStarred: false,
           sender: {
-            id: directMessage.sender._id,
+            id: directMessage.sender._id.toString(),
             username: directMessage.sender.username,
             avatar: directMessage.sender.avatar
           },
           receiver: {
-            id: directMessage.receiver._id,
+            id: directMessage.receiver._id.toString(),
             username: directMessage.receiver.username,
             avatar: directMessage.receiver.avatar
           },
+          replyTo: directMessage.replyTo ? {
+            id: directMessage.replyTo._id.toString(),
+            content: directMessage.replyTo.isDeleted ? null : directMessage.replyTo.content,
+            isDeleted: directMessage.replyTo.isDeleted,
+            sender: {
+              id: directMessage.replyTo.sender._id.toString(),
+              username: directMessage.replyTo.sender.username
+            }
+          } : null,
           createdAt: directMessage.createdAt,
           isRead: directMessage.isRead
         };
 
-        // Send to receiver if online
         socket.to(`user_${receiverId}`).emit('newDirectMessage', messageData);
-        // Send back to sender for confirmation
         socket.emit('directMessageSent', messageData);
 
       } catch (error) {
         socket.emit('error', { message: 'Failed to send direct message' });
+      }
+    });
+
+    // Handle delete direct message
+    socket.on('deleteDirectMessage', async (data) => {
+      try {
+        const { messageId, receiverId } = data;
+        const message = await DirectMessage.findById(messageId);
+
+        if (!message || message.sender.toString() !== socket.userId) {
+          socket.emit('error', { message: 'Cannot delete this message' });
+          return;
+        }
+
+        message.isDeleted = true;
+        message.content = '';
+        await message.save();
+
+        const deleteData = { messageId };
+        socket.emit('messageDeleted', deleteData);
+        socket.to(`user_${receiverId}`).emit('messageDeleted', deleteData);
+      } catch (error) {
+        socket.emit('error', { message: 'Failed to delete message' });
       }
     });
 

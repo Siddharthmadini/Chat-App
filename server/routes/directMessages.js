@@ -5,13 +5,41 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper to format a message for the client
+const formatMessage = (m, currentUserId) => ({
+  id: m._id.toString(),
+  content: m.isDeleted ? null : m.content,
+  isDeleted: m.isDeleted,
+  createdAt: m.createdAt,
+  isRead: m.isRead,
+  isStarred: m.starredBy?.some(id => id.toString() === currentUserId.toString()) || false,
+  sender: {
+    id: m.sender._id.toString(),
+    username: m.sender.username,
+    avatar: m.sender.avatar
+  },
+  receiver: {
+    id: m.receiver._id.toString(),
+    username: m.receiver.username,
+    avatar: m.receiver.avatar
+  },
+  replyTo: m.replyTo ? {
+    id: m.replyTo._id.toString(),
+    content: m.replyTo.isDeleted ? null : m.replyTo.content,
+    isDeleted: m.replyTo.isDeleted,
+    sender: {
+      id: m.replyTo.sender._id.toString(),
+      username: m.replyTo.sender.username
+    }
+  } : null
+});
+
 // Get direct messages with a specific user
 router.get('/:userId', auth, async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 50 } = req.query;
 
-    // Check if users are friends
     const currentUser = await User.findById(req.user._id);
     if (!currentUser.friends.includes(userId)) {
       return res.status(403).json({ message: 'You can only message friends' });
@@ -25,40 +53,21 @@ router.get('/:userId', auth, async (req, res) => {
     })
       .populate('sender', 'username avatar')
       .populate('receiver', 'username avatar')
+      .populate({
+        path: 'replyTo',
+        populate: { path: 'sender', select: 'username' }
+      })
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
-    // Mark messages as read
     await DirectMessage.updateMany(
-      {
-        sender: userId,
-        receiver: req.user._id,
-        isRead: false
-      },
-      {
-        isRead: true,
-        readAt: new Date()
-      }
+      { sender: userId, receiver: req.user._id, isRead: false },
+      { isRead: true, readAt: new Date() }
     );
 
     res.json({
-      messages: messages.reverse().map(m => ({
-        id: m._id,
-        content: m.content,
-        createdAt: m.createdAt,
-        isRead: m.isRead,
-        sender: {
-          id: m.sender._id.toString(),
-          username: m.sender.username,
-          avatar: m.sender.avatar
-        },
-        receiver: {
-          id: m.receiver._id.toString(),
-          username: m.receiver.username,
-          avatar: m.receiver.avatar
-        }
-      })),
+      messages: messages.reverse().map(m => formatMessage(m, req.user._id)),
       currentPage: page,
       hasMore: messages.length === parseInt(limit)
     });
@@ -67,27 +76,85 @@ router.get('/:userId', auth, async (req, res) => {
   }
 });
 
-// Send direct message
+// Delete a message (sender only, soft delete)
+router.delete('/:messageId', auth, async (req, res) => {
+  try {
+    const message = await DirectMessage.findById(req.params.messageId);
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You can only delete your own messages' });
+    }
+
+    message.isDeleted = true;
+    message.content = '';
+    await message.save();
+
+    res.json({ message: 'Message deleted', messageId: req.params.messageId });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Toggle star on a message
+router.put('/:messageId/star', auth, async (req, res) => {
+  try {
+    const message = await DirectMessage.findById(req.params.messageId);
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+
+    const userId = req.user._id;
+    const alreadyStarred = message.starredBy.some(id => id.toString() === userId.toString());
+
+    if (alreadyStarred) {
+      message.starredBy = message.starredBy.filter(id => id.toString() !== userId.toString());
+    } else {
+      message.starredBy.push(userId);
+    }
+
+    await message.save();
+
+    res.json({
+      messageId: req.params.messageId,
+      isStarred: !alreadyStarred
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get starred messages for current user
+router.get('/starred/all', auth, async (req, res) => {
+  try {
+    const messages = await DirectMessage.find({
+      starredBy: req.user._id,
+      isDeleted: false
+    })
+      .populate('sender', 'username avatar')
+      .populate('receiver', 'username avatar')
+      .populate({ path: 'replyTo', populate: { path: 'sender', select: 'username' } })
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    res.json({
+      messages: messages.map(m => formatMessage(m, req.user._id))
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Send direct message (REST fallback)
 router.post('/', auth, async (req, res) => {
   try {
     const { receiverId, content } = req.body;
-
-    // Check if users are friends
     const currentUser = await User.findById(req.user._id);
     if (!currentUser.friends.includes(receiverId)) {
       return res.status(403).json({ message: 'You can only message friends' });
     }
-
-    const message = new DirectMessage({
-      sender: req.user._id,
-      receiver: receiverId,
-      content
-    });
-
+    const message = new DirectMessage({ sender: req.user._id, receiver: receiverId, content });
     await message.save();
     await message.populate('sender', 'username avatar');
     await message.populate('receiver', 'username avatar');
-
     res.status(201).json({ message });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -97,88 +164,8 @@ router.post('/', auth, async (req, res) => {
 // Get unread message count
 router.get('/unread/count', auth, async (req, res) => {
   try {
-    const unreadCount = await DirectMessage.countDocuments({
-      receiver: req.user._id,
-      isRead: false
-    });
-
+    const unreadCount = await DirectMessage.countDocuments({ receiver: req.user._id, isRead: false });
     res.json({ unreadCount });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Get conversations list (recent chats)
-router.get('/', auth, async (req, res) => {
-  try {
-    const conversations = await DirectMessage.aggregate([
-      {
-        $match: {
-          $or: [
-            { sender: req.user._id },
-            { receiver: req.user._id }
-          ]
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      },
-      {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ['$sender', req.user._id] },
-              '$receiver',
-              '$sender'
-            ]
-          },
-          lastMessage: { $first: '$$ROOT' },
-          unreadCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $eq: ['$receiver', req.user._id] },
-                    { $eq: ['$isRead', false] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $project: {
-          user: {
-            _id: '$user._id',
-            username: '$user.username',
-            avatar: '$user.avatar',
-            isOnline: '$user.isOnline',
-            lastSeen: '$user.lastSeen'
-          },
-          lastMessage: '$lastMessage',
-          unreadCount: '$unreadCount'
-        }
-      },
-      {
-        $sort: { 'lastMessage.createdAt': -1 }
-      }
-    ]);
-
-    res.json({ conversations });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
