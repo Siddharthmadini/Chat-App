@@ -11,7 +11,8 @@ if (API_URL) {
 }
 
 // Prevent infinite loading if Render backend is sleeping (free tier spins down)
-axios.defaults.timeout = 12000;
+// 50s timeout to allow Render free tier to wake up (can take 30-50s)
+axios.defaults.timeout = 50000;
 
 // Ping the backend on app load to wake it up (Render free tier spins down after inactivity)
 if (process.env.NODE_ENV === 'production' && API_URL) {
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('/api/auth/me', { timeout: 10000 });
+          const response = await axios.get('/api/auth/me', { timeout: 50000 });
           dispatch({
             type: 'LOGIN_SUCCESS',
             payload: { user: response.data.user, token }
