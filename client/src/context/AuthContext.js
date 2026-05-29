@@ -3,11 +3,19 @@ import axios from 'axios';
 
 // Set base URL for all axios requests
 // Uses env var in production, hardcoded Render URL as fallback, proxy in local dev
-const API_URL = process.env.REACT_APP_API_URL || 
+const API_URL = process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === 'production' ? 'https://chat-app-9cti.onrender.com' : '');
 
 if (API_URL) {
   axios.defaults.baseURL = API_URL;
+}
+
+// Prevent infinite loading if Render backend is sleeping (free tier spins down)
+axios.defaults.timeout = 12000;
+
+// Ping the backend on app load to wake it up (Render free tier spins down after inactivity)
+if (process.env.NODE_ENV === 'production' && API_URL) {
+  axios.get('/api/health').catch(() => {});
 }
 
 const AuthContext = createContext();
@@ -78,13 +86,10 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('/api/auth/me');
+          const response = await axios.get('/api/auth/me', { timeout: 10000 });
           dispatch({
             type: 'LOGIN_SUCCESS',
-            payload: {
-              user: response.data.user,
-              token
-            }
+            payload: { user: response.data.user, token }
           });
         } catch (error) {
           localStorage.removeItem('token');
@@ -94,7 +99,6 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
-
     checkAuth();
   }, []);
 
