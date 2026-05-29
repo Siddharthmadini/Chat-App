@@ -68,7 +68,7 @@ const DirectMessageChat = ({ friend, onBack }) => {
 
       socket.on('messageDeleted', ({ messageId }) => {
         setMessages(prev => prev.map(m =>
-          m.id === messageId ? { ...m, isDeleted: true, content: null } : m
+          String(m.id) === String(messageId) ? { ...m, isDeleted: true, content: null } : m
         ));
       });
 
@@ -118,13 +118,22 @@ const DirectMessageChat = ({ friend, onBack }) => {
   };
 
   const handleDelete = async (message) => {
+    // Optimistically update UI immediately
+    setMessages(prev => prev.map(m =>
+      String(m.id) === String(message.id) ? { ...m, isDeleted: true, content: null } : m
+    ));
     if (socket) {
       socket.emit('deleteDirectMessage', { messageId: message.id, receiverId: friend._id });
     } else {
       try {
         await axios.delete(`/api/direct-messages/${message.id}`);
-        setMessages(prev => prev.map(m => m.id === message.id ? { ...m, isDeleted: true, content: null } : m));
-      } catch { toast.error('Failed to delete message'); }
+      } catch {
+        // Revert on failure
+        setMessages(prev => prev.map(m =>
+          String(m.id) === String(message.id) ? { ...m, isDeleted: false, content: message.content } : m
+        ));
+        toast.error('Failed to delete message');
+      }
     }
   };
 
